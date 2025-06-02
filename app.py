@@ -4,9 +4,11 @@ import joblib
 import numpy as np
 import logging
 import os
+from flask_cors import CORS  # To allow cross-origin requests from frontend
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -38,7 +40,12 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json(force=True)
+    try:
+        data = request.get_json(force=True)
+    except Exception as e:
+        logging.warning(f"Invalid JSON received: {str(e)}")
+        return jsonify({"error": "Invalid JSON data"}), 400
+
     logging.info(f"Received request data: {data}")
 
     # Check for missing features
@@ -62,15 +69,18 @@ def predict():
 
     except Exception as e:
         logging.error(f"Prediction error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Prediction failed. Check your input values."}), 500
 
 @app.route('/form')
 def form():
-    # Serve HTML form file (should be placed in the same directory as this script)
+    # Serve the HTML form - make sure index.html is in the same directory as app.py
     return send_from_directory(os.getcwd(), 'index.html')
 
+@app.route('/styles.css')
+def styles():
+    # Serve the CSS file if needed
+    return send_from_directory(os.getcwd(), 'styles.css')
+
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port, debug=True)
-

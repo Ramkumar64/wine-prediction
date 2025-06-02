@@ -1,30 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wine Class Predictor</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
 </head>
 <body>
-  <h2>Wine Class Predictor</h2>
-  <form id="predict-form">
-    <label>Alcohol: <input type="number" step="any" name="alcohol" required></label><br>
-    <label>Malic Acid: <input type="number" step="any" name="malic_acid" required></label><br>
-    <label>Ash: <input type="number" step="any" name="ash" required></label><br>
-    <label>Alcalinity of Ash: <input type="number" step="any" name="alcalinity_of_ash" required></label><br>
-    <label>Magnesium: <input type="number" step="any" name="magnesium" required></label><br>
-    <label>Total Phenols: <input type="number" step="any" name="total_phenols" required></label><br>
-    <label>Flavanoids: <input type="number" step="any" name="flavanoids" required></label><br>
-    <label>Nonflavanoid Phenols: <input type="number" step="any" name="nonflavanoid_phenols" required></label><br>
-    <label>Proanthocyanins: <input type="number" step="any" name="proanthocyanins" required></label><br>
-    <label>Color Intensity: <input type="number" step="any" name="color_intensity" required></label><br>
-    <label>Hue: <input type="number" step="any" name="hue" required></label><br>
-    <label>OD280/OD315: <input type="number" step="any" name="od280/od315_of_diluted_wines" required></label><br>
-    <label>Proline: <input type="number" step="any" name="proline" required></label><br><br>
 
-    <button type="submit">Predict</button>
-  </form>
+  <div class="container" role="main">
+    <div class="icon" aria-hidden="true">
+      <i class="fas fa-wine-glass-alt"></i>
+    </div>
 
-  <h3 id="result"></h3>
+    <h1>Wine Class Predictor</h1>
+
+    <form id="predict-form" class="form" aria-label="Wine class prediction form" autocomplete="off">
+      <label for="alcohol">Alcohol:</label>
+      <input id="alcohol" type="number" step="any" name="alcohol" required placeholder="e.g. 13.5" autocomplete="off" />
+
+      <label for="malic_acid">Malic Acid:</label>
+      <input id="malic_acid" type="number" step="any" name="malic_acid" required placeholder="e.g. 2.1" autocomplete="off" />
+
+      <label for="ash">Ash:</label>
+      <input id="ash" type="number" step="any" name="ash" required placeholder="e.g. 2.4" autocomplete="off" />
+
+      <label for="alcalinity_of_ash">Alcalinity of Ash:</label>
+      <input id="alcalinity_of_ash" type="number" step="any" name="alcalinity_of_ash" required placeholder="e.g. 15.6" autocomplete="off" />
+
+      <label for="magnesium">Magnesium:</label>
+      <input id="magnesium" type="number" step="any" name="magnesium" required placeholder="e.g. 98" autocomplete="off" />
+
+      <label for="total_phenols">Total Phenols:</label>
+      <input id="total_phenols" type="number" step="any" name="total_phenols" required placeholder="e.g. 2.3" autocomplete="off" />
+
+      <label for="flavanoids">Flavanoids:</label>
+      <input id="flavanoids" type="number" step="any" name="flavanoids" required placeholder="e.g. 2.9" autocomplete="off" />
+
+      <label for="nonflavanoid_phenols">Nonflavanoid Phenols:</label>
+      <input id="nonflavanoid_phenols" type="number" step="any" name="nonflavanoid_phenols" required placeholder="e.g. 0.3" autocomplete="off" />
+
+      <label for="proanthocyanins">Proanthocyanins:</label>
+      <input id="proanthocyanins" type="number" step="any" name="proanthocyanins" required placeholder="e.g. 1.7" autocomplete="off" />
+
+      <label for="color_intensity">Color Intensity:</label>
+      <input id="color_intensity" type="number" step="any" name="color_intensity" required placeholder="e.g. 5.2" autocomplete="off" />
+
+      <label for="hue">Hue:</label>
+      <input id="hue" type="number" step="any" name="hue" required placeholder="e.g. 1.05" autocomplete="off" />
+
+      <label for="od280">OD280/OD315 of diluted wines:</label>
+      <input id="od280" type="number" step="any" name="od280/od315_of_diluted_wines" required placeholder="e.g. 3.1" autocomplete="off" />
+
+      <label for="proline">Proline:</label>
+      <input id="proline" type="number" step="any" name="proline" required placeholder="e.g. 780" autocomplete="off" />
+
+      <button type="submit" class="button">Predict</button>
+    </form>
+
+    <h3 id="result" role="alert" aria-live="polite" tabindex="0"></h3>
+  </div>
 
   <script>
     const form = document.getElementById("predict-form");
@@ -40,16 +79,26 @@
         data[key] = parseFloat(value);
       });
 
-      const response = await fetch("http://localhost:8080/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+      try {
+        const response = await fetch("http://localhost:8080/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
 
-      const json = await response.json();
-      result.innerText = json.predicted_class !== undefined
-        ? `Predicted Wine Class: ${json.predicted_class}`
-        : `Error: ${JSON.stringify(json)}`;
+        if (!response.ok) throw new Error("Server error " + response.status);
+
+        const json = await response.json();
+
+        result.innerText =
+          json.predicted_class !== undefined
+            ? `Predicted Wine Class: ${json.predicted_class}`
+            : `Error: ${JSON.stringify(json)}`;
+        result.focus();
+      } catch (err) {
+        result.innerText = "Error connecting to the server.";
+        result.focus();
+      }
     });
   </script>
 </body>
